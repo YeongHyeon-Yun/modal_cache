@@ -1,3 +1,4 @@
+from flask_cors import CORS
 from flask import Flask, render_template, jsonify, request
 from pymongo import MongoClient
 import requests
@@ -13,8 +14,9 @@ class Config:
     SCHEDULER_API_ENABLED = True
 
 
-app = Flask(__name__)
-app.config.from_object(Config())
+application = Flask(__name__)
+cors = CORS(application, resources={r"/*": {"origins": "*"}})
+application.config.from_object(Config())
 
 client = MongoClient("mongodb://localhost:27017/")
 # client = MongoClient('mongodb://test:test@localhost', 27017)
@@ -24,7 +26,7 @@ db = client.dbTil
 주기적 실행을 위한 flask-apscheduler 라이브러리 (https://viniciuschiele.github.io/flask-apscheduler/rst/usage.html)
 """
 scheduler = APScheduler()
-scheduler.init_app(app)
+scheduler.init_application(application)
 scheduler.start()
 
 
@@ -39,11 +41,11 @@ def autoPiccraw():
     bCrawling.getPic()
 
 
-@app.route('/')
+@application.route('/')
 def index():
     return render_template('index.html')
 
-@app.route('/review/<keyword>')
+@application.route('/review/<keyword>')
 def review(keyword):
     print(keyword)
     # onwer = db.tilreview.find_one({"idx":keyword}, {})
@@ -56,7 +58,7 @@ def review(keyword):
 """
 
 
-@app.route('/sorted', methods=['GET'])
+@application.route('/sorted', methods=['GET'])
 def sorting():
     news = list(db.userStack.find({}, {'_id': False}))
     news.reverse()
@@ -75,13 +77,13 @@ def sorting():
     return jsonify({'velogcards': velogcards, 'tistorycards': tistorycards})
 
 # 리뷰 띄우기
-@app.route('/memo', methods=['GET'])
+@application.route('/memo', methods=['GET'])
 def listing():
     memos = list(db.tilreview.find({}, {'_id': False}))
     return jsonify({'all_memos':memos})
 
 # 검색
-@app.route('/search', methods=['GET'])
+@application.route('/search', methods=['GET'])
 def search():
     txt = request.args.get("txt")
     userdb = db.userInfo.find_one({'name': txt}, {'_id': False})
@@ -90,7 +92,7 @@ def search():
 
 # 리뷰
 
-@app.route('/article', methods=['POST'])
+@application.route('/article', methods=['POST'])
 def update_post():
     idx = request.form.get('idx')
     writer = request.form.get('title')
@@ -102,7 +104,7 @@ def update_post():
     })
     return {"result": "success"}
 
-@app.route('/review', methods=['POST'])
+@application.route('/review', methods=['POST'])
 def modalReview():
     owner_receive = request.form['owner_give']
     user_receive = request.form['user_give']
@@ -119,6 +121,7 @@ def modalReview():
 
     return jsonify({'msg': '저장되었습니다!'})
 
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+#
+if __name__ == '__main__':
+    application.debug = True
+    application.run()
