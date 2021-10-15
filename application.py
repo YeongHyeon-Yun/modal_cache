@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup
 from flask_apscheduler import APScheduler
 import bCrawling
 from flask_cors import CORS
+import os
 
 
 class Config:
@@ -18,7 +19,8 @@ application = Flask(__name__)
 cors = CORS(application, resources={r"/*": {"origins": "*"}})
 application.config.from_object(Config())
 
-client = MongoClient("mongodb://localhost:27017/")
+client = MongoClient(os.environ.get("MONGO_DB_PATH"))
+# client = MongoClient("mongodb://localhost:27017/")
 # client = MongoClient('mongodb://test:test@localhost', 27017)
 db = client.dbTil
 
