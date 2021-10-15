@@ -1,4 +1,3 @@
-from flask_cors import CORS
 from flask import Flask, render_template, jsonify, request
 from pymongo import MongoClient
 import requests
@@ -8,6 +7,7 @@ import urllib
 from bs4 import BeautifulSoup
 from flask_apscheduler import APScheduler
 import bCrawling
+from flask_cors import CORS
 
 
 class Config:
@@ -26,7 +26,7 @@ db = client.dbTil
 주기적 실행을 위한 flask-apscheduler 라이브러리 (https://viniciuschiele.github.io/flask-apscheduler/rst/usage.html)
 """
 scheduler = APScheduler()
-scheduler.init_application(application)
+scheduler.init_app(application)
 scheduler.start()
 
 
@@ -122,6 +122,6 @@ def modalReview():
     return jsonify({'msg': '저장되었습니다!'})
 
 #
-if __name__ == '__main__':
+if __name__ == "__main__":
     application.debug = True
     application.run()
